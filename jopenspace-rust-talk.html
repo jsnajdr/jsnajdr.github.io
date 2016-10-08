@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Lato);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Lato'; }
+      h1, h2, h3 {
+        font-family: 'Lato';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+      # Rust
+      Jarda Šnajdr, Mozilla contributor
+
+      ---
+      ### Rust: safe systems programming language
+      - invented at Mozilla
+      - memory-safe, no undefined behavior, no segfaults
+      - thread-safe, no data races
+      - systems language - full control over hardware
+      - including memory - no garbage collector
+      - target audience: frustrated C/C++ developers
+      - Servo: safe, fast and parallel browser engine
+
+      ---
+      First taste of Rust code:
+      ```rust
+      fn gcd(mut n: u64, mut m: u64) -> u64 {
+          assert!(n != 0 && m != 0);
+          while m != 0 {
+              if m < n {
+                  let t = m; m = n; n = t;
+              }
+              m = m % n;
+          }
+          n
+      }
+      ```
+
+      ---
+      Generic functions with traits:
+      ```rust
+      fn min<T: Ord>(a: T, b: T) -> T {
+          if a <= b { a } else { b }
+      }
+      ```
+
+      ---
+      Enumerated (algebraic) types:
+      ```rust
+      enum Option<T> {
+          None,
+          Some(T)
+      }
+
+      #[must_use]
+      enum Result<T, E> {
+          Ok(T),
+          Err(E)
+      }
+      ```
+
+      ---
+      Function that returns a number maybe:
+      ```rust
+      fn safe_div(n: i32, d: i32) -> Option<i32> {
+          if d == 0 {
+              return None;
+          }
+          return Some(n / d);
+      }
+      ```
+
+      ---
+      Working with the result with pattern matching:
+      ```rust
+      match safe_div(10, 0) {
+          None => println!("No quotient."),
+          Some(u) => println!("quotient is {}", u)
+      }
+
+      if let Some(v) = safe_div(10, 5) {
+          println!("quotient is {}", v);
+      }
+      ```
+
+      - impossible to dereference a null pointer!
+      - safe error handling (no more rv == -1)
+
+      ---
+      Every value has a single owner at any time:
+      ```rust
+      let x = "Hello".to_owned();
+      let y = x; // move
+
+      println!("x is {}", x);
+      println!("y is {}", y); // error
+      ```
+
+      ---
+      Borrow a reference:
+      ```rust
+      let x = "Hello".to_owned();
+      let y = &x;
+
+      println!("x is {}", x);
+      println!("y is {}", y); // ok
+      ```
+
+      ---
+      Reference must not outlive the owner:
+      ```rust
+      let borrow;
+      {
+          let x = "Hello".to_owned();
+          borrow = &x;
+      }
+      ```
+
+      ---
+      Can modify value only when exclusively owned:
+      ```rust
+      let mut x = "Hello".to_owned();
+      let y = &x;
+      x = "World".to_owned(); // error
+      ```
+
+      ---
+      Threading with races:
+      ```rust
+      fn concurrent_inc() {
+        let mut x = 1;
+        let thread1 = std::thread::spawn(|| { x += 8 });
+        let thread2 = std::thread::spawn(|| { x += 27 });
+      }
+      ```
+
+      ---
+      Threading with mutexes and scoped threads:
+      ```rust
+      let x = std::sync::Mutex::new(1);
+      {
+          let thread1 = std::thread::scoped(|| {
+              let mut data = x.lock().unwrap();
+              *data += 8;
+          });
+          let thread2 = std::thread::scoped(|| {
+              let mut data = x.lock().unwrap();
+              *data += 27;
+          });
+      }
+      assert_eq!(*x.lock().unwrap(), 36);
+      ```
+
+      ---
+      More about threads:
+      - sharing with reference counting (`Rc`, `Arc`)
+      - sending messages with channels
+      - types have `Send` and `Sync` traits
+
+      ---
+      Packaging with Cargo
+      - similar to NPM, designed by Yehuda Katz (RoR, Ember)
+      - package repository at crates.io
+
+      ---
+      Learn more:
+      - https://rust-lang.org
+      - https://github.com/servo/servo
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
