@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Title</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Lato);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body {
+          font-family: 'Lato';
+      }
+      h1, h2, h3 {
+        font-family: 'Lato';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code {
+          font-family: 'Ubuntu Mono';
+      }
+    </style>
+  </head>
+<body>
+<textarea id="source">
+class: center, middle
+# React
+Jarda Šnajdr @jsnajdr
+
+---
+### Quick Tour of ES2015/2016/2017
+Use `let` and `const` to declare variables. No more `var`.
+```js
+const API_KEY = "12345";
+let i = 0;
+
+API_KEY = "67890"; // error
+i++; // ok
+```
+---
+Use template literals to format strings.
+```js
+for (let i = 0; i < 10; i++) {
+    console.log(`Iteration number ${i}: ${2 * i + 1}`);
+}
+```
+---
+Use destructuring to access object and array fields.
+```js
+const state = {
+    data: [ "a", "b", "c" ],
+    sortOrder: "asc"
+};
+
+const { data, sortOrder } = state;
+let [ first, second ] = data;
+
+console.log(sortOrder, first, second); // "asc", "a", "b"
+```
+---
+Use `for...of` to loop through arrays (and other iterable objects).
+```js
+const items = [
+    { id: 1 },
+    { id: 2 },
+    { id: 3 }
+];
+
+for (let item of items) {
+    console.log("item id:", item.id);
+}
+
+// Destructure!
+for (let { id } of items) {
+    console.log("item id:", id);
+}
+```
+---
+Be functional! (with arrow functions)
+```js
+const numbers = [ 1, 2, 3, 4, 5, 6 ];
+const squares = numbers.map(n => n ** 2);
+const evens = squares.filter(n => n % 2 === 0);
+const sum = evens.reduce((a, n) => a + n);
+```
+---
+Use spread operator to work with function parameters ...
+```js
+function compute(power, ...numbers) {
+    return numbers.reduce((a, n) => a + n ** power, 0);
+}
+
+compute(1, 3, 4); // 7
+compute(2, 3, 4); // 25
+```
+... and arrays ...
+```js
+const additional = [ "b", "c" ];
+const full = [ "a", ...additional ];
+```
+... and destructuring arrays ...
+```js
+const numbers = [ 1, 2, 3, 4, 5, 6 ];
+const [ first, second, , ...others ] = numbers;
+```
+... and with objects, too!
+```js
+const props = { name: "user", value: "jarda", className: "user-field" };
+const { name, value, ...rest } = props;
+const nextProps = { id: "user", ...rest };
+```
+---
+Use default values for parameters and destructured variables
+```js
+function sort(data, order = "asc") {
+    // sort the data
+}
+
+function sendRequest(url, options = {}) {
+    const { method = "GET" } = options;
+    performRequest(method, url);
+}
+
+sendRequest("http://github.com/api/commits");
+sendRequest("http://github.com/api/createRepo", "POST");
+```
+---
+Use classes instead of functions with prototypes.
+```js
+class CommitList extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { loading: false, data: [] };
+    }
+
+    render() {
+        // render
+    }
+}
+```
+---
+Use new smart methods on arrays and objects.
+```js
+const colors = [ "red", "green", "blue" ];
+colors.find(c => c.length > 3);
+colors.findIndex(c => c.startsWith("g"));
+colors.includes("purple");
+
+const ages = { jarda: 10, honza: 15, martin: 20 };
+
+Object.keys(ages).map(console.log);
+Object.values(ages).map(console.log);
+
+for (const [ name, age ] of Object.entries(ages)) {
+    console.log(`${name} is ${age} years old`);
+}
+```
+---
+### Let's create a React app!
+```bash
+npm i -g create-react-app
+create-react-app react-example
+cd react-example
+npm start
+```
+What's inside?
+- `index.html` document with some markup
+- `index.js` that imports the `App` component and renders it
+- `App.js` component that defines some markup to be shown
+- some CSS styles
+- a template for mocha test
+---
+### Components and JSX
+Component has a `render` method that declares what should be on the screen.
+```js
+class App extends React.Component {
+    render() {
+        let h = "Home";
+        return (
+            <div className="app">
+                Go to <a href="/">{ h.toUpperCase() }</a>
+            </div>
+        );
+    }
+}
+```
+The JSX markup is the same thing as:
+```js
+React.createElement(
+    "div",
+    { className: "app" },
+    "Go to ",
+    React.createElement(
+        "a",
+        { href: "/" },
+        h.toUpperCase()
+    )
+);
+```
+---
+### React UI is declarative
+Describe what should be on the screen, not how to get there.
+```js
+const { loading, error, commits } = this.state;
+
+return (
+    <div className="App">
+        <button onClick={this.onClick} disabled={loading}>Load</button>
+        { error && <div className="alert">{ error }</div> }
+        { loading && <div className="loading">loading...</div> }
+        { commits && <pre>{ JSON.stringify(commits, null, 2) }</pre> }
+    </div>
+);
+```
+---
+### React UI is composable
+Presentational (dumb) components with no state, just props.
+```js
+class AppComponent extends Component {
+    render() {
+        const { loading, error, commits, onLoad } = this.props;
+        return (
+            <div className="App">
+                <button onClick={onLoad} disabled={loading}>Load</button>
+                <ErrorMessage error={error} />
+                <LoadingIndicator loading={loading} />
+                { commits && <CommitList commits={commits} /> }
+            </div>
+        );
+    }
+}
+```
+Can be just a function, too!
+```js
+const AppComponent = ({ loading, error, commits, onLoad }) => (
+    <div className="App">
+        <button onClick={onLoad} disabled={loading}>Load</button>
+        <ErrorMessage error={error} />
+        <LoadingIndicator loading={loading} />
+        { commits && <CommitList commits={commits} /> }
+    </div>
+);
+```
+---
+### Unidirectional flow of data and actions
+
+State => UI => Action => State
+
+Component is a function of type State => UI (Map operation)
+
+State update is a function of type (State, Action) => State (Reduce operation)
+---
+### Redux - a simple state management library
+
+- state is stored in a Redux store
+- state can be changed only by dispatching an action
+- reducer takes a state and action and produces the new state
+- clients subscribe to store updates
+---
+
+Learn more:
+
+</textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>remark.create();</script>
+</body>
+</html>
