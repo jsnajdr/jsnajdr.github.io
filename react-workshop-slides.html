@@ -26,6 +26,10 @@ class: center, middle
 Jarda Šnajdr @jsnajdr
 
 ---
+### Resources
+- https://github.com/jsnajdr/react-workshop
+- https://jsnajdr.github.io/react-workshop-slides.html
+---
 ### Quick Tour of ES2015/2016/2017
 Use `let` and `const` to declare variables. No more `var`.
 ```js
@@ -132,9 +136,12 @@ sendRequest("http://github.com/api/createRepo", "POST");
 Use classes instead of functions with prototypes.
 ```js
 class CommitList extends React.Component {
+    // instance property
+    state = { loading: false, data: [] }
+    
     constructor(props) {
         super(props);
-        this.state = { loading: false, data: [] };
+        // construct
     }
 
     render() {
