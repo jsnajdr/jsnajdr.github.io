@@ -1,0 +1,93 @@
+<style>
+  .plans {
+    width: 300px;
+  }
+  .plans-nav {
+    display: flex;
+    justify-content: space-between;
+  }
+  .plans-carousel {
+    overflow: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .plans-grid {
+    display: flex;
+  }
+  .plan {
+    width: 96px;
+    margin: 0px 1px 10px;
+    border: 1px solid black;
+    height: 60px;
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .use-scroll-snap-align .plan {
+    scroll-snap-align: start;
+  }
+  label {
+    display: block;
+  }
+</style>
+<div class="plans">
+  <div class="plans-nav">
+    <button id="scroll-left">&lt;</button>
+    <button id="scroll-right">&gt;</button>
+  </div>
+  <div id="carousel" class="plans-carousel use-scroll-snap-align">
+    <div class="plans-grid">
+      <div class="plan">Blogger</div>
+      <div class="plan">Personal</div>
+      <div class="plan">Premium</div>
+      <div class="plan">Business</div>
+      <div class="plan">eCommerce</div>
+    </div>
+  </div>
+  <label><input id="checkbox-scroll" type="checkbox" checked />Set scroll-snap-align on plan elements</label>
+  <label><input id="checkbox-anim" type="checkbox" checked />Animate the move left/right actions</label>
+</div>
+<script>
+  let animate = true;
+  document.getElementById("checkbox-anim").addEventListener("change", event => {
+    animate = event.target.checked;
+  });
+
+  document.getElementById("checkbox-scroll").addEventListener("change", event => {
+    document.getElementById("carousel").classList.toggle('use-scroll-snap-align')
+  });
+  
+  function scrollBy(el, totalX, totalTime) {
+    let startX;
+    let startTime;
+
+    if (!animate) {
+      el.scrollLeft += totalX;
+      return;
+    }
+
+    requestAnimationFrame(function step(currentTime) {
+      if (!startTime) {
+        startX = el.scrollLeft;
+        startTime = currentTime;
+      } else {
+        const progress = Math.min(1, (currentTime - startTime) / totalTime);
+        carousel.scrollLeft = startX + totalX * progress;
+        if (progress >= 1) {
+          return;
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  
+  document.getElementById("scroll-left").addEventListener("click", () => {
+    const carousel = document.getElementById("carousel");
+    scrollBy(carousel, -100, 500);
+  });
+
+  document.getElementById("scroll-right").addEventListener("click", () => {
+    const carousel = document.getElementById("carousel");
+    scrollBy(carousel, 100, 500);
+  });
+</script>
